@@ -34,6 +34,7 @@
               <tr>
                 <th>Train Name</th>
                 <th>Destination</th>
+                <th>First Train</th>
                 <th>Next Train</th>
                 <th>Frequency</th>
                 <th>Due in</th>
@@ -58,13 +59,13 @@
           <form class="" action="index.html" method="post">
             <div class="form-group">
               <label>Train Name:</label>
-              <input type="text" class="form-control" id="name">
+              <input type="text" class="form-control" id="name-input">
               <label>Destination:</label>
-              <input type="text" class="form-control" id="dest">
+              <input type="text" class="form-control" id="dest-input">
               <label>First departure:</label>
-              <input placeholder="eg, '5am'" type="text" class="form-control" id="start">
+              <input placeholder="eg, '5am'" type="text" class="form-control" id="start-input">
               <label>Frequency:</label>
-              <input type="text" class="form-control" id="freq">
+              <input type="text" class="form-control" id="freq-input">
             </div>
             <button class="btn btn-primary" id="submit-button" type="submit">Submit</button>
           </form>
