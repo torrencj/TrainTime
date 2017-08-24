@@ -32,6 +32,10 @@ console.log(snap.key);
          snap.key);
 });
 
+// database.ref().on("child_removed", function(snap) {
+//
+// });
+
 function update() {
   //make all the numbers in the wait time row count down.
   //if we're boarding, change the wait time text to the frequency and start over.
@@ -82,10 +86,9 @@ function addRow(name, dest, start, freq, key) {
 
 //I stole this wholesale from http://jsbin.com/satutawipo/edit TODO steal less wholesale.
 $("tbody").on("keydown", function(event) {
-  console.log("RUNNING TBODY EDIT");
   var elem = $(event.target);
   if ($(event.target).attr("contenteditable") == "true") {
-    console.log("true");
+    // console.log("true");
 
     var esc = event.which == 27,
         newline = event.which == 13,
@@ -126,18 +129,21 @@ $(document, "#remove-train").on("click", function(event){
     //figure out which row we're in and get the database key for it from the ID.
     var currentTrain = $(event.target).parents("tr").attr("id");
     database.ref(currentTrain).remove();
+    $(event.target).parents("tr").css("display", "none")
   }
-})
+});
+
+
 
  // submit button to push the data up to the train table
 $("#submit-button").on("click", function(event){
   console.log("SUBMITTING");
 	event.preventDefault();
 
-	var name = $("#name").val().trim();
-	var dest = $("#dest").val().trim();
-	var start = $("#start").val().trim();
-	var freq = $("#freq").val();
+	var name = $("#name-input").val().trim();
+	var dest = $("#dest-input").val().trim();
+	var start = $("#start-input").val().trim();
+	var freq = $("#freq-input").val();
   console.log(name + dest + start + freq);
   if (name && dest && start && freq) {
 
