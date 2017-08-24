@@ -1,0 +1,31 @@
+
+
+tbody tr:hover {
+    /*background-color: #fff7a0;*/
+    box-shadow: 10px 10px 5px #888888;
+    box-shadow: 10px 10px 21px -5px rgba(0,0,0,0.36);
+
+}
+
+tbody tr:hover #remove-train {
+  opacity: 1;
+}
+
+tbody td:focus {
+  background-color: #fff7a0;
+  box-shadow: 10px 10px 21px -5px rgba(0,0,0,0.36);
+}
+
+/*textarea {
+  width: 50%;
+}*/
+
+#save-edits {
+  display: none;
+}
+
+#remove-train {
+  margin: 10px;
+  opacity: 0;
+  /*transition: opacity .35s ease;*/
+}

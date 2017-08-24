@@ -14,7 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
     <!-- Moment -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
-
+    <link rel="stylesheet" href="assets/style.css">
   </head>
   <body>
 
@@ -34,17 +34,18 @@
               <tr>
                 <th>Train Name</th>
                 <th>Destination</th>
-                <th>First Departure</th>
+                <th>Next Train</th>
                 <th>Frequency</th>
                 <th>Due in</th>
               </tr>
             </thead>
             <tbody id="tableBody">
-              <tr>
+              <!-- <tr> -->
                 <!-- Train data goes here. -->
-              </tr>
+              <!-- </tr> -->
             </tbody>
           </table>
+          <button class="btn btn-danger" id="save-edits" type="submit">Save edits</button>
         </div>
       </div>
 
@@ -61,7 +62,7 @@
               <label>Destination:</label>
               <input type="text" class="form-control" id="dest">
               <label>First departure:</label>
-              <input type="text" class="form-control" id="start">
+              <input placeholder="eg, '5am'" type="text" class="form-control" id="start">
               <label>Frequency:</label>
               <input type="text" class="form-control" id="freq">
             </div>
@@ -70,10 +71,6 @@
           </div>
         </div>
       </div>
-
-
-
-
     <script src="assets/traintime.js"></script>
   </body>
 </html>
