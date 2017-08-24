@@ -1,5 +1,3 @@
-//Set up firebase to deliver the data we need to a local object and then work with it from there.
-//Save our changes to the local object to firebase in a way that makes sense.
 
 // Initialize Firebase
 var config = {
@@ -12,7 +10,7 @@ var config = {
 };
 firebase.initializeApp(config);
 
-//count down the minutes until the train is due.
+//Set an interval to run the wait time update function.
 $(document).ready(function() {
   setInterval(update, 60000);
 })
@@ -21,7 +19,7 @@ $(document).ready(function() {
 var database = firebase.database();
 var userEditData = {};
 
-// This is triggered for each item in the database on load.
+// This is triggered for each item in the database on load. Draws a new row to the table
 database.ref().on("child_added", function(snap) {
 
 console.log(snap.key);
@@ -32,44 +30,44 @@ console.log(snap.key);
          snap.key);
 });
 
-// database.ref().on("child_removed", function(snap) {
-//
-// });
 
+// =========== Function Defs ===========
+
+
+//make all the numbers in the wait time row count down.
+//if we're boarding, change the wait time text to the frequency and start over.
 function update() {
-  //make all the numbers in the wait time row count down.
-  //if we're boarding, change the wait time text to the frequency and start over.
   $("td#wait-time-live").each( function() {
-    var temp = +$(this).text(); //NaN if this is a string...
+    var temp = +$(this).text(); //NaN if this is a string... be careful
+    var element = $(this);
     if (!temp) {
-      $(this).text($(this).prev().text())
+      element.text(element.prev().text()) //
     } else {
       if (temp > 1) {
-        $(this).text(+$(this).text() - 1);
+        element.text( +element.text() - 1); //Decrement the wait time
       } else {
-        $(this).text("Boarding")
+        element.text("Boarding")
       }
     }
   });
 }
 
-
 //Returns the difference of two dates in months, uses MomentJS
 function findMinutesAway(start, freq) {
-  var diff = moment().diff(moment(start, "HH:mm A"), 'minutes'); //always pos
+  var diff = moment().diff(moment(start, "HH:mm A"), 'minutes');
 
   if (diff > 0) {
     return (diff % freq);
   } else {
     return -diff;
   }
-
 }
 
 // function to create the new row
 function addRow(name, dest, start, freq, key) {
-
   var waitTime = findMinutesAway(start, freq);
+
+  //Looks like soup, but I'm not sure how to make it more consise.
   var newRow = $("<tr>").attr("id",key)
     .append( $("<td>").attr("contenteditable","true").attr("id", "name").text(name).data({"name":name}) )
     .append( $("<td>").attr("contenteditable","true").attr("id", "dest").text(dest).data({"dest":dest}) )
@@ -84,11 +82,11 @@ function addRow(name, dest, start, freq, key) {
   $("tbody").append(newRow);
 };
 
-//I stole this wholesale from http://jsbin.com/satutawipo/edit TODO steal less wholesale.
+//I stole this wholesale from http://jsbin.com/satutawipo/edit //TODO steal less wholesale.
+//I edited it by saving the current data of the item in the table and using that to "undo" edits.
 $("tbody").on("keydown", function(event) {
   var elem = $(event.target);
   if ($(event.target).attr("contenteditable") == "true") {
-    // console.log("true");
 
     var esc = event.which == 27,
         newline = event.which == 13,
@@ -104,12 +102,9 @@ $("tbody").on("keydown", function(event) {
       } else if (newline) {
         // save
         userEditData[currentCell] = elem.text();
-
         console.log("User edit: ");
         console.log(userEditData);
-
         database.ref(elem.parent().attr("id")).update(userEditData);
-
         elem.blur();
         event.preventDefault();
       }
@@ -117,39 +112,30 @@ $("tbody").on("keydown", function(event) {
   }
 });
 
+
+// =========== click handlers ===========
+
+
+//TODO Not using this right now. Updates are immediate.
 $("#save-edits").on("click", function(){
   $("#save-edits").css("display","none");
-//TODO Not using this. Updates are immediate.
 })
 
 $(document, "#remove-train").on("click", function(event){
   if ($(event.target).attr("id") == "remove-train") {
-    // $(event.target).
-    // console.log($(event.target).parents("tr").attr("id"));
-    //figure out which row we're in and get the database key for it from the ID.
     var currentTrain = $(event.target).parents("tr").attr("id");
     database.ref(currentTrain).remove();
     $(event.target).parents("tr").css("display", "none")
   }
 });
 
-
-
- // submit button to push the data up to the train table
+// submit button to push the data up to the train table
 $("#submit-button").on("click", function(event){
-  console.log("SUBMITTING");
-	event.preventDefault();
-
 	var name = $("#name-input").val().trim();
 	var dest = $("#dest-input").val().trim();
 	var start = $("#start-input").val().trim();
 	var freq = $("#freq-input").val();
-  console.log(name + dest + start + freq);
-  if (name && dest && start && freq) {
-
-
-    // console.log(name);
-    var initialTime = moment(start, "H");
+  var initialTime = moment(start, "H");
 
     // clear the fields
     $("#name").val('');
@@ -157,16 +143,14 @@ $("#submit-button").on("click", function(event){
   	$("#start").val('');
   	$("#freq").val('');
 
-    // var newKey = database.ref().push().key;
-    // console.log(newKey);
+    //build the train data
     var trainData = {
       "name": name,
       "dest" : dest,
       "start": start,
       "freq": freq
     };
-    var newKey = database.ref().push(trainData).key;
-    console.log(newKey);
-}
 
+    database.ref().push(trainData);
+    event.preventDefault();
 });
