@@ -89,9 +89,9 @@ function addRow(name, dest, start, freq, key) {
   //                       .append( $("<td>").click(cellEdit).text(moment().add(waitTime, 'minutes').format("LT")) )
   //                       .append( $("<td>").click(cellEdit).text(freq) )
   //                       .append( $("<td>").click(cellEdit).text(waitTime).attr("id","wait-time-live") );
-
-  var newRow = $("<tr>").attr("dbkey",key)
-    .append( $("<td>").attr("contenteditable","true").text(name) )
+// console.log(name);
+  var newRow = $("<tr>").attr("id",key)
+    .append( $("<td>").attr("contenteditable","true").attr("id","name").text(name) )
     .append( $("<td>").attr("contenteditable","true").text(dest) )
     .append( $("<td>").attr("contenteditable","true").text(moment().add(waitTime, 'minutes').format("LT")) )
     .append( $("<td>").attr("contenteditable","true").text(freq) )
@@ -114,28 +114,38 @@ function addRow(name, dest, start, freq, key) {
 
 //I stole this wholesale from http://jsbin.com/satutawipo/edit TODO steal less wholesale.
 $("tbody").on("keydown", function(event) {
-  // console.log("hello there!");
-  var esc = event.which == 27,
-      newline = event.which == 13,
-      elem = event.target,
-      input = elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA';
-      // console.log(elem);
+  // console.log("RUNNING TBODY EDIT");
+  var elem = $(event.target);
+  if ($(event.target).attr("contenteditable") == "true") {
+    // console.log("true");
 
+    var esc = event.which == 27,
+        newline = event.which == 13,
+        input = elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA';
+    var currentCell = elem.attr("id");
+    var currentData = elem.data();
 
-  if (input) {
-    if (esc) {
-      // restore state
-      document.execCommand('undo'); //TODO This isn't exactly what I want. Not sure how to solve this.
-      elem.blur();
-    } else if (newline) {
-      // save
-      $("#save-edits").css("display","block");
-      // userEditData[$(this).] = el.innerHTML;
-      elem.blur();
-      event.preventDefault();
+    if (input) {
+      if (esc) {
+        // restore state
+        elem.text(currentData[currentCell]);
+        elem.blur();
+      } else if (newline) {
+        // save
+        userEditData[currentCell] = elem.text();
+
+        console.log("User edit: ");
+        console.log(userEditData);
+
+        database.ref(elem.parent().attr("id")).update(userEditData);
+
+        elem.blur();
+        event.preventDefault();
+      }
     }
   }
 });
+
 
 $("#save-edits").on("click", function(){
   //TODO firebase edit
@@ -146,10 +156,10 @@ $("#save-edits").on("click", function(){
 $("#submit-button").on("click", function(event){
 	event.preventDefault();
 
-	var name = $("#name").val().trim();
-	var dest = $("#dest").val().trim();
-	var start = $("#start").val().trim();
-	var freq = $("#freq").val();
+	var name = $("#name-input").val().trim();
+	var dest = $("#dest-input").val().trim();
+	var start = $("#start-input").val().trim();
+	var freq = $("#freq-input").val();
   console.log("line 71 freq:" + freq);
 
   // console.log(start);
@@ -169,6 +179,7 @@ $("#submit-button").on("click", function(event){
     "start": start,
     "freq": freq
   };
+  console.log(trainData);
   var newKey = database.ref().push(trainData).key;
   console.log(newKey);
   // database.ref().push({
