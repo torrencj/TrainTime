@@ -21,8 +21,6 @@ var userEditData = {};
 
 // This is triggered for each item in the database on load. Draws a new row to the table
 database.ref().on("child_added", function(snap) {
-
-console.log(snap.key);
   addRow(snap.val().name,
          snap.val().dest,
          snap.val().start,
