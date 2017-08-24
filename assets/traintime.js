@@ -1,4 +1,3 @@
-//TODO Rejigger this whole thing.
 //Set up firebase to deliver the data we need to a local object and then work with it from there.
 //Save our changes to the local object to firebase in a way that makes sense.
 
@@ -16,7 +15,6 @@ firebase.initializeApp(config);
 //count down the minutes until the train is due.
 $(document).ready(function() {
   setInterval(update, 60000);
-  // $("#save-edits").css("display","none");
 })
 
 //creating a variable to reference the database
@@ -61,86 +59,108 @@ function findMinutesAway(start, freq) {
   } else {
     return -diff;
   }
+
 }
 
 // function to create the new row
 function addRow(name, dest, start, freq, key) {
-  // console.log("name: "+name+"dest: "+ dest+" start: "+ start+" freq: "+ freq);
 
   var waitTime = findMinutesAway(start, freq);
-
-  var newRow = $("<tr>").attr("dbkey",key)
-    .append( $("<td>").attr("contenteditable","true").text(name) )
-    .append( $("<td>").attr("contenteditable","true").text(dest) )
-    .append( $("<td>").attr("contenteditable","true").text(moment().add(waitTime, 'minutes').format("LT")) )
-    .append( $("<td>").attr("contenteditable","true").text(freq) )
-    .append( $("<td>").attr("contenteditable","true").text(waitTime).attr("id","wait-time-live") )
+  var newRow = $("<tr>").attr("id",key)
+    .append( $("<td>").attr("contenteditable","true").attr("id", "name").text(name).data({"name":name}) )
+    .append( $("<td>").attr("contenteditable","true").attr("id", "dest").text(dest).data({"dest":dest}) )
+    .append( $("<td>").attr("contenteditable","true").attr("id", "start").text(start).data({"start":start}) )
+    .append( $("<td>").text(moment().add(waitTime, 'minutes').format("LT")) )
+    .append( $("<td>").attr("contenteditable","true").attr("id", "freq").text(freq).data({"freq":freq}) )
+    .append( $("<td>").text(waitTime).attr("id","wait-time-live") )
     .append( $("<button type='button' id ='remove-train' class='close' aria-label='Close'>")
-      .html("<span aria-hidden='true'>&times;</span>")
+      .html("<span id= 'remove-train' aria-hidden='true'>&times;</span>")
 );
 
   $("tbody").append(newRow);
 };
 
-
 //I stole this wholesale from http://jsbin.com/satutawipo/edit TODO steal less wholesale.
 $("tbody").on("keydown", function(event) {
-  // console.log("hello there!");
-  var esc = event.which == 27,
-      newline = event.which == 13,
-      elem = event.target,
-      input = elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA';
-      // console.log(elem);
+  console.log("RUNNING TBODY EDIT");
+  var elem = $(event.target);
+  if ($(event.target).attr("contenteditable") == "true") {
+    console.log("true");
 
+    var esc = event.which == 27,
+        newline = event.which == 13,
+        input = elem.nodeName != 'INPUT' && elem.nodeName != 'TEXTAREA';
+    var currentCell = elem.attr("id");
+    var currentData = elem.data();
 
-  if (input) {
-    if (esc) {
-      // restore state
-      document.execCommand('undo'); //TODO This isn't exactly what I want. Not sure how to solve this.
-      elem.blur();
-    } else if (newline) {
-      // save
-      $("#save-edits").css("display","block");
-      // userEditData[$(this).] = el.innerHTML;
-      elem.blur();
-      event.preventDefault();
+    if (input) {
+      if (esc) {
+        // restore state
+        elem.text(currentData[currentCell]);
+        elem.blur();
+      } else if (newline) {
+        // save
+        userEditData[currentCell] = elem.text();
+
+        console.log("User edit: ");
+        console.log(userEditData);
+
+        database.ref(elem.parent().attr("id")).update(userEditData);
+
+        elem.blur();
+        event.preventDefault();
+      }
     }
   }
 });
 
 $("#save-edits").on("click", function(){
-  //TODO firebase edit
-  //TODO get the <td>'s parent key attribute and then use that to edit things on firebase.
+  $("#save-edits").css("display","none");
+//TODO Not using this. Updates are immediate.
+})
+
+$(document, "#remove-train").on("click", function(event){
+  if ($(event.target).attr("id") == "remove-train") {
+    // $(event.target).
+    // console.log($(event.target).parents("tr").attr("id"));
+    //figure out which row we're in and get the database key for it from the ID.
+    var currentTrain = $(event.target).parents("tr").attr("id");
+    database.ref(currentTrain).remove();
+  }
 })
 
  // submit button to push the data up to the train table
 $("#submit-button").on("click", function(event){
+  console.log("SUBMITTING");
 	event.preventDefault();
 
 	var name = $("#name").val().trim();
 	var dest = $("#dest").val().trim();
 	var start = $("#start").val().trim();
 	var freq = $("#freq").val();
-  console.log("line 71 freq:" + freq);
+  console.log(name + dest + start + freq);
+  if (name && dest && start && freq) {
 
-  // console.log(start);
-  var initialTime = moment(start, "H");
 
-  // clear the fields
-  $("#name").val('');
-	$("#dest").val('');
-	$("#start").val('');
-	$("#freq").val('');
+    // console.log(name);
+    var initialTime = moment(start, "H");
 
-  // var newKey = database.ref().push().key;
-  // console.log(newKey);
-  var trainData = {
-    "name": name,
-    "dest" : dest,
-    "start": start,
-    "freq": freq
-  };
-  var newKey = database.ref().push(trainData).key;
-  console.log(newKey);
+    // clear the fields
+    $("#name").val('');
+  	$("#dest").val('');
+  	$("#start").val('');
+  	$("#freq").val('');
+
+    // var newKey = database.ref().push().key;
+    // console.log(newKey);
+    var trainData = {
+      "name": name,
+      "dest" : dest,
+      "start": start,
+      "freq": freq
+    };
+    var newKey = database.ref().push(trainData).key;
+    console.log(newKey);
+}
 
 });
